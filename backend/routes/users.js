@@ -36,7 +36,7 @@ router.post('/verify/send', auth, async (req, res) => {
           <div style="padding:32px 36px;">
             <h2 style="font-size:20px;font-weight:700;margin:0 0 12px;letter-spacing:-0.02em;">Привет, ${user.name}! 👋</h2>
             <p style="font-size:15px;color:#9999bb;line-height:1.7;margin:0 0 24px;">
-              Ты зарегистрировался на <strong style="color:#eeeef8;">freelance-platform-production-2360.up.railway.app</strong>.<br>
+              Ты зарегистрировался на <strong style="color:#eeeef8;">freelance-platform-production.up.railway.app</strong>.<br>
               Нажми кнопку ниже чтобы подтвердить свой email и получить галочку верификации в профиле.
             </p>
             <a href="${verifyUrl}" style="display:inline-block;background:linear-gradient(135deg,#4f6ef7,#8b5cf6);color:#fff;text-decoration:none;padding:14px 32px;border-radius:99px;font-weight:700;font-size:15px;letter-spacing:-0.01em;">
