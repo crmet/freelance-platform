@@ -14,6 +14,7 @@ const rateLimit = require('express-rate-limit');
 const hpp = require('hpp');
 
 const app = express();
+app.set('trust proxy', 1);
 const server = http.createServer(app);
 
 // ── Socket.IO ────────────────────────────────────
