@@ -1,0 +1,38 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Root
+        run: npm install
+
+      - name: Install Frontend
+        working-directory: frontend-react
+        run: npm install
+
+      - name: Backend Syntax Check
+        run: node --check backend/server.js
+
+      - name: Build React
+        working-directory: frontend-react
+        run: npm run build
+
+      - name: Upload Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: react-build
+          path: frontend-react/dist
