@@ -19,7 +19,7 @@ const server = http.createServer(app);
 // ── Socket.IO ────────────────────────────────────
 const io = new Server(server, {
   cors: {
-    origin: process.env.SITE_URL || 'https://freelance-platform-production-2360.up.railway.app',
+    origin: process.env.SITE_URL || 'https://freelance-platform-production.up.railway.app',
     methods: ['GET', 'POST']
   }
 });
@@ -33,7 +33,7 @@ app.use(helmet({
 // ── CORS — только свой домен ──────────────────────
 app.use(cors({
   origin: [
-    process.env.SITE_URL || 'https://freelance-platform-production-2360.up.railway.app',
+    process.env.SITE_URL || 'https://freelance-platform-production.up.railway.app',
     'http://localhost:3000',
     'http://localhost:8080',
     'http://localhost:5173'
