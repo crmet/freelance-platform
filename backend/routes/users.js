@@ -20,7 +20,7 @@ router.post('/verify/send', auth, async (req, res) => {
     user.verifyTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 часа
     await user.save();
 
-    const siteUrl = process.env.SITE_URL || 'https://freelance-platform-production-2360.up.railway.app';
+    const siteUrl = process.env.SITE_URL || 'https://freelance-platform-production.up.railway.app';
     const verifyUrl = `${siteUrl}/profile.html?verify=${token}`;
 
     await resend.emails.send({
