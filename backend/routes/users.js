@@ -5,7 +5,6 @@ const auth = require('../middleware/auth');
 const User = require('../models/User');
 const { Resend } = require('resend');
 
-const Resend = require('resend').Resend;
 
 const resend = new Resend(process.env.RESEND_API_KEY || '');
 
