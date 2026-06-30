@@ -14,17 +14,17 @@ jobs:
 
     steps:
       - name: Wait for deploy
-        run: sleep 20
+        run: sleep 45
 
       - name: Check API
         run: |
-          for i in {1..12}; do
+          for i in {1..10}; do
             curl --fail https://freelance-platform-production.up.railway.app/api/tasks && exit 0
-            echo "Retry API..."
+            echo "Retry..."
             sleep 10
           done
           exit 1
 
       - name: Check Website
         run: |
-          curl --fail https://freelance-platform-production.up.railway.app/
+          curl --fail https://freelance-platform-production.up.railway.app
