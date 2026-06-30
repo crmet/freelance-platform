@@ -9,6 +9,7 @@
     "build": "cd frontend-react && npm install && npm run build"
   },
   "dependencies": {
+    "@sentry/node": "^10.62.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",

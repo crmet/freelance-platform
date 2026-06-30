@@ -2,7 +2,7 @@ name: Deployment Check
 
 on:
   workflow_run:
-    workflows: ["CI/CD"]
+    workflows: ["CI"]
     types:
       - completed
 
@@ -13,12 +13,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Wait for Railway
-        run: sleep 30
+      - name: Wait for deploy
+        run: sleep 45
 
       - name: Check API
         run: |
-          curl --fail https://freelance-platform-production.up.railway.app/api/tasks
+          for i in {1..10}; do
+            curl --fail https://freelance-platform-production.up.railway.app/api/tasks && exit 0
+            echo "Retry..."
+            sleep 10
+          done
+          exit 1
 
       - name: Check Website
         run: |
