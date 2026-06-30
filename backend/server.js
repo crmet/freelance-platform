@@ -156,3 +156,11 @@ const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
+
+if (!process.env.MONGO_URI) {
+  console.log("MONGO_URI missing");
+}
+
+if (!process.env.RESEND_API_KEY) {
+  console.log("RESEND_API_KEY missing");
+}

@@ -5,7 +5,9 @@ const auth = require('../middleware/auth');
 const User = require('../models/User');
 const { Resend } = require('resend');
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const Resend = require('resend').Resend;
+
+const resend = new Resend(process.env.RESEND_API_KEY || '');
 
 // ─── Отправить письмо с подтверждением ───────────────────────────────────────
 router.post('/verify/send', auth, async (req, res) => {

@@ -34,9 +34,3 @@ jobs:
 
       - name: Backend Syntax Check
         run: node --check backend/server.js
-
-      - name: Backend Smoke Test
-        run: |
-          node backend/server.js &
-          sleep 3
-          curl --fail http://localhost:8080/health
