@@ -1,59 +1,91 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import API from '../api';
 
 export default function HomePage() {
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
   const [recentTasks, setRecentTasks] = useState([]);
   const [services, setServices] = useState([]);
   const [freelancers, setFreelancers] = useState([]);
 
-  const loadStats = useCallback(async () => {
-  try {
-    const { data } = await API.get('/tasks');
-    setStats(data);
-  } catch {}
-}, []);
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
 
-const loadRecentTasks = useCallback(async () => {
-  try {
-    const { data } = await API.get('/tasks');
-    setRecentTasks(data.filter(t => t.status === 'open').slice(0, 6));
-  } catch {}
-}, []);
+      try {
+        const [tasksRes, servicesRes, usersRes] = await Promise.all([
+          API.get('/tasks'),
+          API.get('/services'),
+          API.get('/users?role=freelancer&limit=8'),
+        ]);
 
-const loadServices = useCallback(async () => {
-  try {
-    const { data } = await API.get('/services');
-    setServices(data || []);
-  } catch {}
-}, []);
+        const tasks = tasksRes.data || [];
+        const servicesData = servicesRes.data || [];
+        const users = usersRes.data || [];
 
-const loadFreelancers = useCallback(async () => {
-  try {
-    const { data } = await API.get('/users?role=freelancer&limit=8');
-    setFreelancers(data || []);
-  } catch {}
-}, []);
+        setStats({
+          totalTasks: tasks.length,
+          openTasks: tasks.filter(t => t.status === 'open').length,
+          totalServices: servicesData.length,
+          totalFreelancers: users.length,
+        });
 
-useEffect(() => {
-  const loadAll = async () => {
-    try {
-      const [tasks, services, users] = await Promise.all([
-        API.get('/tasks'),
-        API.get('/services'),
-        API.get('/users?role=freelancer&limit=8')
-      ]);
+        setRecentTasks(tasks.filter(t => t.status === 'open').slice(0, 6));
+        setServices(servicesData.slice(0, 6));
+        setFreelancers(users.slice(0, 8));
+      } catch (err) {
+        console.error('Home load error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      setRecentTasks(tasks.data?.slice(0, 6) || []);
-      setServices(services.data || []);
-      setFreelancers(users.data || []);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    load();
+  }, []);
 
-  loadAll();
-}, []);
+  if (loading) {
+    return (
+      <div style={{ padding: 20 }}>
+        <h2>Loading...</h2>
+      </div>
+    );
+  }
 
-  return <div>Home</div>;
+  return (
+    <div style={{ padding: 20, fontFamily: 'Arial' }}>
+      <h1>Dashboard</h1>
+
+      {/* STATS */}
+      <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+        <div>Tasks: {stats?.totalTasks}</div>
+        <div>Open: {stats?.openTasks}</div>
+        <div>Services: {stats?.totalServices}</div>
+        <div>Freelancers: {stats?.totalFreelancers}</div>
+      </div>
+
+      {/* TASKS */}
+      <h2>Recent Tasks</h2>
+      {recentTasks.map(t => (
+        <div key={t._id} style={{ padding: 8, borderBottom: '1px solid #ddd' }}>
+          {t.title || 'No title'}
+        </div>
+      ))}
+
+      {/* SERVICES */}
+      <h2>Services</h2>
+      {services.map(s => (
+        <div key={s._id} style={{ padding: 8, borderBottom: '1px solid #ddd' }}>
+          {s.title || 'Service'}
+        </div>
+      ))}
+
+      {/* FREELANCERS */}
+      <h2>Freelancers</h2>
+      {freelancers.map(f => (
+        <div key={f._id} style={{ padding: 8, borderBottom: '1px solid #ddd' }}>
+          {f.name || 'User'}
+        </div>
+      ))}
+    </div>
+  );
 }
