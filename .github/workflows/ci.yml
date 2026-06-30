@@ -38,11 +38,12 @@ jobs:
       - name: Backend Smoke Test
         run: |
           CI=true node backend/server.js &
-          sleep 5
-          curl --fail http://localhost:8080/health || true
+          SERVER_PID=$!
 
-      - name: Upload Build
-        uses: actions/upload-artifact@v4
-        with:
-          name: react-build
-          path: frontend-react/dist
+          for i in {1..15}; do
+            curl --fail http://localhost:8080/health && echo "OK" && break
+            echo "waiting backend..."
+            sleep 2
+          done
+
+          kill $SERVER_PID
