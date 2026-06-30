@@ -3,8 +3,7 @@ name: Deployment Check
 on:
   workflow_run:
     workflows: ["CI"]
-    types:
-      - completed
+    types: [completed]
 
 jobs:
   check:
@@ -13,18 +12,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Wait for deploy
-        run: sleep 45
+      - name: Wait for deploy (Railway cold start)
+        run: sleep 90
 
       - name: Check API
         run: |
-          for i in {1..10}; do
-            curl --fail https://freelance-platform-production.up.railway.app/api/tasks && exit 0
-            echo "Retry..."
+          for i in {1..20}; do
+            echo "Attempt $i..."
+
+            if curl -sf https://freelance-platform-production.up.railway.app/api/tasks; then
+              echo "API OK"
+              exit 0
+            fi
+
             sleep 10
           done
+
+          echo "API failed after retries"
           exit 1
 
       - name: Check Website
         run: |
-          curl --fail https://freelance-platform-production.up.railway.app
+          for i in {1..10}; do
+            if curl -sf https://freelance-platform-production.up.railway.app; then
+              echo "Website OK"
+              exit 0
+            fi
+
+            sleep 10
+          done
+
+          exit 1
