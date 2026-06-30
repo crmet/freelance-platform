@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+  baseURL: import.meta.env.VITE_API_URL
 });
 
 API.interceptors.request.use(config => {
@@ -10,16 +10,15 @@ API.interceptors.request.use(config => {
   return config;
 });
 
-// Если токен истёк — чистим всё и редиректим на главную
 API.interceptors.response.use(
-  response => response,
-  error => {
-    if (error.response?.status === 401) {
+  res => res,
+  err => {
+    if (err.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/';
     }
-    return Promise.reject(error);
+    return Promise.reject(err);
   }
 );
 
