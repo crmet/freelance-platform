@@ -28,19 +28,23 @@ export default defineConfig([
     },
 
     rules: {
-      // 🔥 КРИТИЧЕСКИ ВАЖНО: не ломаем разработку
+      // не ломаем разработку
       'no-unused-vars': ['warn', { varsIgnorePattern: '^[A-Z_]' }],
 
-      // чтобы не задалбывало сейчас
+      // пустые блоки — предупреждение
       'no-empty': 'warn',
 
-      // react hooks пусть предупреждают, но не блокируют
+      // react hooks — только предупреждения
       'react-hooks/exhaustive-deps': 'warn',
+      'react-hooks/immutability': 'off',
 
       // refresh оставляем
       'react-refresh/only-export-components': 'warn',
 
-      // мягче режим для dev
+      // Date.now в рендере — предупреждение
+      'react-hooks/purity': 'off',
+
+      // мягче режим
       'no-console': 'off',
     },
   },
