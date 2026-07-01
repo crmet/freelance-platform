@@ -1,31 +1,24 @@
 // backend/utils/notify.js
-// Единый модуль для Email и Telegram уведомлений
+const { Resend } = require('resend');
 
-const nodemailer = require('nodemailer');
-
-// ── EMAIL ──────────────────────────────────────────────
-let transporter = null;
-
-function getTransporter() {
-  if (transporter) return transporter;
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) return null;
-  transporter = nodemailer.createTransport({
-    service: 'gmail',      // или 'yandex', 'mail.ru' — меняй под себя
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS   // App Password для Gmail
-    }
-  });
-  return transporter;
+// ── RESEND ─────────────────────────────────────────────
+let resend = null;
+function getResend() {
+  if (resend) return resend;
+  if (!process.env.RESEND_API_KEY) return null;
+  resend = new Resend(process.env.RESEND_API_KEY);
+  return resend;
 }
 
 async function sendEmail(to, subject, html) {
-  const t = getTransporter();
-  if (!t || !to) return;
+  const r = getResend();
+  if (!r || !to) return;
   try {
-    await t.sendMail({
-      from: `"FreeLanceHub" <${process.env.EMAIL_USER}>`,
-      to, subject, html
+    await r.emails.send({
+      from: 'FreeLanceHub <onboarding@resend.dev>',
+      to,
+      subject,
+      html
     });
     console.log(`📧 Email sent to ${to}`);
   } catch (err) {
@@ -51,6 +44,27 @@ async function sendTelegram(chatId, text) {
   }
 }
 
+// ── ВЕРИФИКАЦИЯ EMAIL ──────────────────────────────────
+async function sendVerificationEmail(user, token) {
+  const link = `${process.env.SITE_URL}/verify-email?token=${token}`;
+  const html = `
+    <div style="font-family:sans-serif;max-width:560px;margin:0 auto;background:#0f0f1a;color:#fff;border-radius:16px;padding:2rem;">
+      <h2 style="color:#4f6ef7;margin-bottom:.5rem;">FreeLanceHub</h2>
+      <p style="color:#aaa;margin-bottom:1.5rem;">Подтверждение email</p>
+      <p>Привет, <b>${user.name}</b>!</p>
+      <p style="color:#ccc;">Для завершения регистрации подтвердите ваш email:</p>
+      <div style="text-align:center;margin:2rem 0;">
+        <a href="${link}"
+           style="background:#4f6ef7;color:#fff;padding:.85rem 2rem;border-radius:99px;text-decoration:none;font-weight:700;font-size:1rem;">
+          Подтвердить email →
+        </a>
+      </div>
+      <p style="color:#666;font-size:.8rem;">Ссылка действительна 24 часа. Если вы не регистрировались — проигнорируйте это письмо.</p>
+    </div>`;
+
+  await sendEmail(user.email, 'Подтвердите ваш email — FreeLanceHub', html);
+}
+
 // ── ШАБЛОНЫ ────────────────────────────────────────────
 async function notifyNewProposal(client, task, freelancer) {
   const subject = `Новый отклик на задание "${task.title}"`;
@@ -63,20 +77,15 @@ async function notifyNewProposal(client, task, freelancer) {
         <b>${task.title}</b><br>
         <span style="color:#666;">Бюджет: ₽${task.budget.toLocaleString()}</span>
       </div>
-      <a href="${process.env.SITE_URL}/task-detail.html?id=${task._id}"
+      <a href="${process.env.SITE_URL}/tasks/${task._id}"
          style="background:#4f6ef7;color:#fff;padding:.75rem 1.5rem;border-radius:99px;text-decoration:none;font-weight:600;">
         Посмотреть отклик →
       </a>
     </div>`;
-
-  if (client.emailNotifications) {
-    await sendEmail(client.email, subject, html);
-  }
-  if (client.telegramChatId) {
-    await sendTelegram(client.telegramChatId,
-      `🔔 <b>Новый отклик!</b>\n\nФрилансер <b>${freelancer.name}</b> откликнулся на задание «${task.title}».\n\n👉 ${process.env.SITE_URL}/task-detail.html?id=${task._id}`
-    );
-  }
+  if (client.emailNotifications) await sendEmail(client.email, subject, html);
+  if (client.telegramChatId) await sendTelegram(client.telegramChatId,
+    `🔔 <b>Новый отклик!</b>\n\nФрилансер <b>${freelancer.name}</b> откликнулся на задание «${task.title}».\n\n👉 ${process.env.SITE_URL}/tasks/${task._id}`
+  );
 }
 
 async function notifyProposalAccepted(freelancer, task) {
@@ -90,20 +99,15 @@ async function notifyProposalAccepted(freelancer, task) {
         <b>${task.title}</b><br>
         <span style="color:#666;">Бюджет: ₽${task.budget.toLocaleString()}</span>
       </div>
-      <a href="${process.env.SITE_URL}/task-detail.html?id=${task._id}"
+      <a href="${process.env.SITE_URL}/tasks/${task._id}"
          style="background:#10d98a;color:#fff;padding:.75rem 1.5rem;border-radius:99px;text-decoration:none;font-weight:600;">
         Перейти к заданию →
       </a>
     </div>`;
-
-  if (freelancer.emailNotifications) {
-    await sendEmail(freelancer.email, subject, html);
-  }
-  if (freelancer.telegramChatId) {
-    await sendTelegram(freelancer.telegramChatId,
-      `✅ <b>Отклик принят!</b>\n\nЗаказчик принял ваш отклик на задание «${task.title}».\n\n👉 ${process.env.SITE_URL}/task-detail.html?id=${task._id}`
-    );
-  }
+  if (freelancer.emailNotifications) await sendEmail(freelancer.email, subject, html);
+  if (freelancer.telegramChatId) await sendTelegram(freelancer.telegramChatId,
+    `✅ <b>Отклик принят!</b>\n\nЗаказчик принял ваш отклик на задание «${task.title}».\n\n👉 ${process.env.SITE_URL}/tasks/${task._id}`
+  );
 }
 
 async function notifyTaskCompleted(freelancer, task) {
@@ -113,20 +117,15 @@ async function notifyTaskCompleted(freelancer, task) {
       <h2 style="color:#4f6ef7;">FreeLanceHub</h2>
       <p>Привет, <b>${freelancer.name}</b>!</p>
       <p>Заказчик принял работу по заданию <b>${task.title}</b>. Не забудьте оставить взаимный отзыв!</p>
-      <a href="${process.env.SITE_URL}/task-detail.html?id=${task._id}"
+      <a href="${process.env.SITE_URL}/tasks/${task._id}"
          style="background:#4f6ef7;color:#fff;padding:.75rem 1.5rem;border-radius:99px;text-decoration:none;font-weight:600;">
         Оставить отзыв →
       </a>
     </div>`;
-
-  if (freelancer.emailNotifications) {
-    await sendEmail(freelancer.email, subject, html);
-  }
-  if (freelancer.telegramChatId) {
-    await sendTelegram(freelancer.telegramChatId,
-      `🎉 <b>Задание выполнено!</b>\n\n«${task.title}» — заказчик принял работу. Оставьте отзыв!\n\n👉 ${process.env.SITE_URL}/task-detail.html?id=${task._id}`
-    );
-  }
+  if (freelancer.emailNotifications) await sendEmail(freelancer.email, subject, html);
+  if (freelancer.telegramChatId) await sendTelegram(freelancer.telegramChatId,
+    `🎉 <b>Задание выполнено!</b>\n\n«${task.title}» — заказчик принял работу.\n\n👉 ${process.env.SITE_URL}/tasks/${task._id}`
+  );
 }
 
 async function notifyNewReview(user, reviewer, rating) {
@@ -150,6 +149,7 @@ async function notifyNewReview(user, reviewer, rating) {
 module.exports = {
   sendEmail,
   sendTelegram,
+  sendVerificationEmail,
   notifyNewProposal,
   notifyProposalAccepted,
   notifyTaskCompleted,
