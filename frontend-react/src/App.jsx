@@ -14,6 +14,7 @@ const ProfilePage     = lazy(() => import('./pages/ProfilePage'));
 const ServicesPage    = lazy(() => import('./pages/ServicesPage'));
 const FreelancersPage = lazy(() => import('./pages/FreelancersPage'));
 const AdminPage       = lazy(() => import('./pages/AdminPage'));
+const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage'));
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -50,12 +51,13 @@ function AppInner() {
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Публичные */}
-          <Route path="/"            element={<HomePage onAuthOpen={mode => setAuthModal(mode)} />} />
-          <Route path="/tasks"       element={<TasksPage onAuthOpen={mode => setAuthModal(mode)} />} />
-          <Route path="/tasks/:id"   element={<TaskDetailPage onAuthOpen={mode => setAuthModal(mode)} />} />
-          <Route path="/services"    element={<ServicesPage onAuthOpen={mode => setAuthModal(mode)} />} />
-          <Route path="/freelancers" element={<FreelancersPage />} />
-          <Route path="/profile/:id" element={<ProfilePage />} />
+          <Route path="/"                element={<HomePage onAuthOpen={mode => setAuthModal(mode)} />} />
+          <Route path="/tasks"           element={<TasksPage onAuthOpen={mode => setAuthModal(mode)} />} />
+          <Route path="/tasks/:id"       element={<TaskDetailPage onAuthOpen={mode => setAuthModal(mode)} />} />
+          <Route path="/services"        element={<ServicesPage onAuthOpen={mode => setAuthModal(mode)} />} />
+          <Route path="/freelancers"     element={<FreelancersPage />} />
+          <Route path="/profile/:id"     element={<ProfilePage />} />
+          <Route path="/verify-email"    element={<VerifyEmailPage />} />
 
           {/* Только для залогиненных */}
           <Route path="/chat" element={

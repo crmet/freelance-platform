@@ -8,6 +8,10 @@ export default function AuthModal({ mode, onClose }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [role, setRole] = useState('freelancer');
+  const [registered, setRegistered] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMsg, setResendMsg] = useState('');
 
   // Login fields
   const [loginEmail, setLoginEmail] = useState('');
@@ -41,12 +45,56 @@ export default function AuthModal({ mode, onClose }) {
     try {
       const { data } = await API.post('/auth/register', { name: regName, email: regEmail, password: regPass, role });
       login(data.user, data.token);
-      onClose();
+      setRegisteredEmail(regEmail);
+      setRegistered(true);
     } catch (err) {
       setError(err.response?.data?.message || 'Ошибка регистрации');
     } finally {
       setLoading(false);
     }
+  }
+
+  async function handleResend() {
+    setResendLoading(true); setResendMsg('');
+    try {
+      await API.post('/auth/resend-verify', { email: registeredEmail });
+      setResendMsg('Письмо отправлено повторно!');
+    } catch {
+      setResendMsg('Ошибка отправки. Попробуйте позже.');
+    } finally {
+      setResendLoading(false);
+    }
+  }
+
+  // Экран после успешной регистрации
+  if (registered) {
+    return (
+      <div className="modal-overlay open" onClick={e => e.target === e.currentTarget && onClose()}>
+        <div className="modal" style={{ maxWidth: 420, textAlign: 'center' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📧</div>
+          <h3 style={{ marginBottom: '.5rem' }}>Подтвердите email</h3>
+          <p style={{ color: 'var(--text2)', fontSize: '.9rem', marginBottom: '1.5rem', lineHeight: 1.6 }}>
+            Мы отправили письмо на <b>{registeredEmail}</b>.<br />
+            Перейдите по ссылке в письме чтобы активировать аккаунт.
+          </p>
+          <p style={{ color: 'var(--text3)', fontSize: '.8rem', marginBottom: '1rem' }}>
+            Не получили письмо? Проверьте папку «Спам».
+          </p>
+          {resendMsg && (
+            <div style={{ color: 'var(--blue)', fontSize: '.85rem', marginBottom: '.75rem' }}>
+              {resendMsg}
+            </div>
+          )}
+          <button className="btn btn-glass w-full" onClick={handleResend} disabled={resendLoading}
+            style={{ marginBottom: '.75rem' }}>
+            {resendLoading ? 'Отправляем...' : 'Отправить повторно'}
+          </button>
+          <button className="btn btn-primary w-full" onClick={onClose}>
+            Хорошо, понял!
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
