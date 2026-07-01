@@ -5,16 +5,26 @@ import API from '../api';
 export default function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [status, setStatus] = useState('loading'); // loading | success | error
+  const [status, setStatus] = useState('loading');
 
   useEffect(() => {
     const token = searchParams.get('token');
-    if (!token) { setStatus('error'); return; }
 
-    API.get(`/auth/verify/${token}`)
-      .then(() => setStatus('success'))
-      .catch(() => setStatus('error'));
-  }, []);
+    async function verify() {
+      if (!token) {
+        setStatus('error');
+        return;
+      }
+      try {
+        await API.get(`/auth/verify/${token}`);
+        setStatus('success');
+      } catch {
+        setStatus('error');
+      }
+    }
+
+    verify();
+  }, [searchParams]);
 
   return (
     <div style={{
