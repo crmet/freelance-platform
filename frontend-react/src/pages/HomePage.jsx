@@ -131,10 +131,10 @@ export default function HomePage({ onAuthOpen }) {
           <div className="hero-cta">
             <Link to="/tasks" className="btn btn-primary btn-xl">Найти задание</Link>
             {!user && (
-              <button className="btn btn-glass btn-xl" onClick={() => onAuthOpen('register')}>Разместить заказ</button>
+              <button className="btn btn-glass btn-xl" onClick={() => onAuthOpen('register')}>Разместить задание</button>
             )}
             {user?.role === 'client' && (
-              <Link to="/tasks" className="btn btn-glass btn-xl">Разместить заказ</Link>
+              <Link to="/tasks" className="btn btn-glass btn-xl">Разместить задание</Link>
             )}
             {user?.role === 'freelancer' && (
               <Link to="/services" className="btn btn-glass btn-xl">Разместить услугу</Link>
@@ -302,7 +302,7 @@ export default function HomePage({ onAuthOpen }) {
                   <button className="btn btn-primary btn-xl" onClick={() => onAuthOpen('register')}>Создать аккаунт →</button>
                 )}
                 {user?.role === 'client' && (
-                  <Link to="/tasks" className="btn btn-primary btn-xl">Разместить заказ →</Link>
+                  <Link to="/tasks" className="btn btn-primary btn-xl">Разместить задание →</Link>
                 )}
                 {user?.role === 'freelancer' && (
                   <Link to="/services" className="btn btn-primary btn-xl">Разместить услугу →</Link>
